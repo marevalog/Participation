@@ -48,30 +48,64 @@ date <- ISOdatetime(year,month,day, hour = 12,min = 0, sec = 0, tz = "GMT")
 date1 <- ISOdatetime(2015,04,05,hour = 12,min = 0, sec = 0, tz = "GMT")
 
 
-#  Missing data in "time of visit"
-# creating missing indicator variable
+
+
+# creating missing indicator variable for time of visit
 sensis$hora_miss[is.na(sensis$HORA_VISITA)] <- 1
 sensis$hora_miss[!is.na(sensis$HORA_VISITA)] <- 0
 
-#CREATING A FUNCTION FOR THE MISSING DATA IN "HORA_VISITA"
-#where the two variables are the weeks
+# creating missing indicator variable for locality
+sensis$loc_miss[is.na(sensis$L)] <- 1
+sensis$loc_miss[!is.na(sensis$L)] <- 0
 
+# creating missing indicator variable for vivienda
+sensis$viv_miss[is.na(sensis$V)] <- 1
+sensis$viv_miss[!is.na(sensis$V)] <- 0
+
+# creating missing indicator variable for date programmed
+sensis$dia_miss[is.na(sensis$DIA_PROG)] <- 1
+sensis$dia_miss[!is.na(sensis$DIA_PROG)] <- 0
+
+# creating missing indicator variable for results
+sensis$result_miss[is.na(sensis$RESULTADO)] <- 1
+sensis$result_miss[!is.na(sensis$RESULTADO)] <- 0
+
+# creating missing indicator variable for cause of reprogramming
+sensis$cause_miss[is.na(sensis$MOTIVO_REPROG)] <- 1
+sensis$cause_miss[!is.na(sensis$MOTIVO_REPROG)] <- 0
+
+
+#CREATING A FUNCTION FOR THE MISSING DATA IN A COLUMN
+#where the two variables are the weeks, and the third is the column we have previously defined
+##with the binary system
+
+miss<- function(a,b,column){
+ data<- data.frame(sensis$SENSIBILIZADOR,column)
+ barplot(prop.table(table(data[which(date >= date1 + weeks(a) & date < date1 + weeks(b)),]),1)
+          [,2],  horiz = T, las = 2, cex.names = 0.6, col = "lightskyblue", main=paste("Proportion of missing data in", ' ' ,  "\nfrom Week ",a, " to ",b))
+ prop_mat <- prop.table(table(data[which(date >= date1 + weeks(a) & date < date1 + weeks(b)),]),1)
+ dimnames(prop_mat) <- NULL
+ total_visits <- rowSums(table(data[which(date >= date1 + weeks(a) & date < date1 + weeks(b)),]))
+ dimnames(total_visits) <- NULL
+ text((prop_mat[,2])+0.02, (c(0:21)+0.6)*1.20, labels = total_visits[], cex =0.6, font = 2)
+}
+
+
+#  Missing data in "time of visit"
 miss.hora<- function(a,b){
- data_hora <- data.frame(sensis$SENSIBILIZADOR, sensis$hora_miss)
- barplot(prop.table(table(data_hora[which(date >= date1 + weeks(a) & date < date1 + weeks(b)),]),1)
-          [,2],  horiz = T, las = 2, cex.names = 0.6, col = "lightskyblue", main=paste("Proportion of missing data in 'Hora de Visita'","\nfrom Week ",a, " to ",b))
- prop_hour_mat <- prop.table(table(data_hora[which(date >= date1 + weeks(a) & date < date1 + weeks(b)),]),1)
- dimnames(prop_hour_mat) <- NULL
- total_visits_hora <- rowSums(table(data_hora[which(date >= date1 + weeks(a) & date < date1 + weeks(b)),]))
- dimnames(total_visits_hora) <- NULL
- text((prop_hour_mat[,2])+0.02, (c(0:21)+0.6)*1.20, labels = total_visits_hora[], cex =0.6, font = 2)
+  data_hora <- data.frame(sensis$SENSIBILIZADOR, sensis$hora_miss)
+  barplot(prop.table(table(data_hora[which(date >= date1 + weeks(a) & date < date1 + weeks(b)),]),1)
+          [,2],  horiz = T, las = 2, cex.names = 0.6, col = "lightgreen", main=paste("Proportion of missing data in 'Hora Visita'","\nfrom Week ",a, " to ",b))
+  prop_hora_mat <- prop.table(table(data_hora[which(date >= date1 + weeks(a) & date < date1 + weeks(b)),]),1)
+  dimnames(prop_hora_mat) <- NULL
+  total_visits_hora <- rowSums(table(data_hora[which(date >= date1 + weeks(a) & date < date1 + weeks(b)),]))
+  dimnames(total_visits_hora) <- NULL
+  text((prop_hora_mat[,2])+0.02, (c(0:21)+0.6)*1.20, labels = total_visits_hora[], cex =0.6, font = 2)
 }
 #no data for weeks 2 through 4 -> shows error in prop.table : subscript out of bounds 
 
+
 # Missing data in "locality"
-# creating missing indicator variable
-sensis$loc_miss[is.na(sensis$L)] <- 1
-sensis$loc_miss[!is.na(sensis$L)] <- 0
 #cant_loc <- table(sensis$SENSIBILIZADOR, sensis$L)
 #prop_loc <- prop.table(table(sensis$SENSIBILIZADOR, sensis$loc_miss), 1)
 #barplot(prop_loc[,2], horiz = T, las = 2)
@@ -93,8 +127,6 @@ miss.loc<- function(a,b){
  
 
 # Missing data in "Vivienda"
-sensis$viv_miss[is.na(sensis$V)] <- 1
-sensis$viv_miss[!is.na(sensis$V)] <- 0
 #Number of houses visited with and without missing data
 #cant_viv <- table(sensis$SENSIBILIZADOR, sensis$viv_miss)
 
@@ -115,8 +147,6 @@ miss.viv<- function(a,b){
 
 
 # Missing data in "Programmed date"
-sensis$dia_miss[is.na(sensis$DIA_PROG)] <- 1
-sensis$dia_miss[!is.na(sensis$DIA_PROG)] <- 0
 #cant_diaprog <- table(sensis$SENSIBILIZADOR, sensis$dia_miss)
 #prop_diaprog <- prop.table(table(sensis$SENSIBILIZADOR, sensis$dia_miss), 1)
 #barplot(prop_diaprog[,2], horiz = T, las = 2)
@@ -138,9 +168,8 @@ miss.prog<- function(a,b){
 #no data at all for weeks 2 through 4 -> shows error in prop.table as Subscript out of bounds
 
 
+
 # Missing data in "Results" (sprayed, closed, reluctant, etc.)
-sensis$result_miss[is.na(sensis$RESULTADO)] <- 1
-sensis$result_miss[!is.na(sensis$RESULTADO)] <- 0
 #cant_result <- table(sensis$SENSIBILIZADOR, sensis$result_miss)
 #prop_result <- prop.table(table(sensis$SENSIBILIZADOR, sensis$result_miss), 1)
 
@@ -150,7 +179,7 @@ sensis$result_miss[!is.na(sensis$RESULTADO)] <- 0
 miss.result<- function(a,b){
   data_result <- data.frame(sensis$SENSIBILIZADOR, sensis$result_miss)
   barplot(prop.table(table(data_result[which(date >= date1 + weeks(a) & date < date1 + weeks(b)),]),1)
-          [,2],  horiz = T, las = 2, cex.names = 0.6, col = "paleturquoise1", main=paste("Proportion of missing data in 'Results'","\n from Week",a, " to ",b))
+          [,2],  horiz = T, las = 2, cex.names = 0.6, col = "lightsalmon", main=paste("Proportion of missing data in 'Results'","\n from Week",a, " to ",b))
   prop_result_mat <- prop.table(table(data_result[which(date >= date1 + weeks(a) & date < date1 + weeks(b)),]),1)
   dimnames(prop_result_mat) <- NULL
   total_visits_result <- rowSums(table(data_result[which(date >= date1 + weeks(a) & date < date1 + weeks(b)),]))
@@ -161,8 +190,6 @@ miss.result<- function(a,b){
  
 
 # Missing data in "Cause of Reprogramming"
-sensis$cause_miss[is.na(sensis$MOTIVO_REPROG)] <- 1
-sensis$cause_miss[!is.na(sensis$MOTIVO_REPROG)] <- 0
 #cant_result <- table(sensis$SENSIBILIZADOR, sensis$result_miss)
 #prop_result <- prop.table(table(sensis$SENSIBILIZADOR, sensis$result_miss), 1)
 #barplot(prop_result[,2], horiz = T, las = 2)
@@ -177,7 +204,7 @@ miss.cause<- function(a,b){
   dimnames(prop_cause_mat) <- NULL
   total_visits_cause <- rowSums(table(data_cause[which(date >= date1 + weeks(a) & date < date1 + weeks(b)),]))
   dimnames(total_visits_cause) <- NULL
-  text((prop_cause_mat[,2])-0.025, (c(0:21)+0.6)*1.20, labels = total_visits_cause[], cex =0.6, font = 2)
+  text((prop_cause_mat[,2])+0.025, (c(0:21)+0.6)*1.20, labels = total_visits_cause[], cex =0.6, font = 2)
 }
 #no data/ no missing data for weeks 1 through 5 -> shows error in prop.table as Subscript out of bounds
 
