@@ -3,7 +3,7 @@
 #setwd("/Users/ricardocasney/Documents/Work/Chagas/Participation/DBs")
 # Reading the data (dataset has many blanks, therefore na.strings...)
 setwd("~/Downloads")
-sensis <- read.csv("Sensiibilizacion_Participacion - Hoja 1.csv", na.strings = c("", "NA"),
+sensis <- read.csv("Sensiibilizacion_Participacion - Hoja 1-2.csv", na.strings = c("", "NA"),
                    nrows = 3149)
 install.packages("lubridate")
 library(lubridate)
